@@ -12,9 +12,10 @@ namespace CsvFileProcessor
         #region Field
         private IFixerClient _client;
         private string _filePath;
+        private int _count = 0;
         #endregion
 
-
+        public List<string> ErrorList { get; set; }
         /// <summary>
         /// Constructor
         /// </summary>
@@ -24,6 +25,7 @@ namespace CsvFileProcessor
         {
             _client = client;
             _filePath = filePath;
+            ErrorList = new List<string>();
         }
 
         /// <summary>
@@ -47,18 +49,28 @@ namespace CsvFileProcessor
         private ExchangeData GetDataFromCsv(string csvLines)
         {
             var exchangeData = new ExchangeData();
-            if (!string.IsNullOrEmpty(csvLines))
+
+            try
             {
-                var splitValue = csvLines.Split(',');
+                if (!string.IsNullOrEmpty(csvLines))
+                {
+                    ++_count;
+                    var splitValue = csvLines.Split(',');
 
-                exchangeData.TradeDate = ConvertStringToDate(splitValue[0]);
-                exchangeData.BaseCurrency = CurrencySymbolValidator(splitValue[1]);
-                exchangeData.CounterCurrency = CurrencySymbolValidator(splitValue[2]);
-                exchangeData.BaseCurrencyAmount = Convert.ToDouble(splitValue[3]);
-                exchangeData.ValueDate = ConvertStringToDate(splitValue[4]);
-                exchangeData.CounterCurrencyAmount = GetAmount(exchangeData);
+                    exchangeData.TradeDate = ConvertStringToDate(splitValue[0]);
+                    exchangeData.BaseCurrency = CurrencySymbolValidator(splitValue[1]);
+                    exchangeData.CounterCurrency = CurrencySymbolValidator(splitValue[2]);
+                    exchangeData.BaseCurrencyAmount = Convert.ToDouble(splitValue[3]);
+                    exchangeData.ValueDate = ConvertStringToDate(splitValue[4]);
+                    exchangeData.CounterCurrencyAmount = GetAmount(exchangeData);
 
+                }
             }
+            catch (Exception ex)
+            {
+                ErrorList.Add(string.Format("Error {0} at line number {1}", ex.Message, _count));
+            }
+
             return exchangeData;
         }
 
@@ -72,11 +84,11 @@ namespace CsvFileProcessor
             DateTime dt;
             if (!DateTime.TryParse(data, out dt))
             {
-                throw new FormatException(string.Format("Not a valid date {0}",data));
-            } 
+                throw new FormatException(string.Format("Not a valid date {0}", data));
+            }
             if (dt != null && dt < new DateTime(1999, 1, 1))
             {
-                throw new NotSupportedException(string.Format("Only Currency information after 1999 is available. User Provided Date {0}",dt));
+                throw new NotSupportedException(string.Format("Only Currency information after 1999 is available. User Provided Date {0}", dt));
             }
             return dt;
         }
@@ -84,17 +96,17 @@ namespace CsvFileProcessor
         {
             if (string.IsNullOrEmpty(symbol))
             {
-                throw new ArgumentNullException(nameof(symbol), "Symbol cannot be null or whitespace.");
+                throw new ArgumentNullException("Symbol cannot be null or whitespace.");
             }
             else if (symbol.Length != 3)
             {
-                throw new NotSupportedException(string.Format("Invalid Currency Code {0}",symbol));
+                throw new NotSupportedException(string.Format("Invalid Currency Code {0}", symbol));
             }
             foreach (char c in symbol)
             {
                 if (!char.IsLetter(c))
                 {
-                    throw new NotSupportedException(string.Format("Invalid Currency Code {0}",symbol));
+                    throw new NotSupportedException(string.Format("Invalid Currency Code {0}", symbol));
                 }
             }
             return symbol;

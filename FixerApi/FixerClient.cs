@@ -30,23 +30,25 @@ namespace FixerApi
         /// <returns></returns>
         private double GetRate(ExchangeData exchangeData)
         {
+            double exchangeRate = 0;
             exchangeData.BaseCurrency = exchangeData.BaseCurrency.ToUpper();
             exchangeData.CounterCurrency = exchangeData.CounterCurrency.ToUpper();
             var dateString = exchangeData.ValueDate.HasValue ? exchangeData.ValueDate.Value.ToString("yyyy-MM-dd") : "latest";
-            var uri = string.Format("{0}{1}?base={2}&symbols={3}",BaseUri,dateString,exchangeData.BaseCurrency,exchangeData.CounterCurrency);
+            var uri = string.Format("{0}{1}?base={2}&symbols={3}", BaseUri, dateString, exchangeData.BaseCurrency, exchangeData.CounterCurrency);
             try
             {
                 using (var client = new WebClient())
                 {
-                    // this sleep used to send request in some time interval as to avoid 429 error.
-                    Thread.Sleep(4000);
-                    return JsonParser.JsonProcessor( client.DownloadString(uri),exchangeData.CounterCurrency);
+                    // this sleep used to send request in some time interval as to avoid 429 error and we dont have control over external API.
+                    //Thread.Sleep(4000);
+                    exchangeRate = JsonParser.JsonProcessor(client.DownloadString(uri), exchangeData.CounterCurrency);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Console.WriteLine("Error {0} | Base Currency {1} Counter Currency {2}", ex.Message, exchangeData.BaseCurrency, exchangeData.CounterCurrency);
             }
+            return exchangeRate;
         }
 
     }
