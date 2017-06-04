@@ -15,7 +15,10 @@ namespace CsvFileProcessor
         private int _count = 0;
         #endregion
 
+        #region Properties
         public List<string> ErrorList { get; set; }
+        #endregion
+
         /// <summary>
         /// Constructor
         /// </summary>
