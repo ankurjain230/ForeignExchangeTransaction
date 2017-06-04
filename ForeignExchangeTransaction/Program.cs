@@ -26,7 +26,7 @@ namespace ForeignExchangeTransaction
             {
                 var client = new FixerClient();
                 var fileProcessor = new FileProcessor(client, filePath);
-                Console.WriteLine("Please note: If any row in CSV file provided by user contains some invalid data then that row will be skipped. Information related to invalid data will be provided at the last with row number.");
+                Console.WriteLine("Please note: If any row in CSV file provided by user contains some invalid data then that row will be skipped. Information related to invalid data will be provided at the last with row number.\n\n");
                 Printer(fileProcessor.FileReader());
 
                 if (fileProcessor.ErrorList != null && fileProcessor.ErrorList.Count > 0)
